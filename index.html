@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Master SPLDV - Modul & Tantangan Interaktif</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Inter Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- KaTeX CSS for Math Formulas -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <!-- KaTeX JS Core & Auto-Render -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="initKaTeX()"></script>
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .katex-display {
+            margin: 0.5em 0 !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 4px 0;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Application Container -->
+    <div id="app" class="flex-grow flex flex-col max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+        
+        <!-- HEADER -->
+        <header class="flex flex-col md:flex-row items-center justify-between border-b border-slate-200 pb-5 mb-6 gap-4">
+            <div class="flex items-center space-x-3 w-full md:w-auto justify-between md:justify-start">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-gradient-to-tr from-indigo-600 to-violet-600 text-white p-3 rounded-2xl shadow-md shadow-indigo-200">
+                        <i class="fa-solid fa-calculator text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900">Quiz Master SPLDV</h1>
+                        <p class="text-xs text-slate-500 font-medium">Penguatan Konsep & Evaluasi Komprehensif (30 Soal)</p>
+                    </div>
+                </div>
+
+                <!-- Reset Button for Mobile Header -->
+                <button onclick="promptResetQuiz()" class="md:hidden px-3 py-1.5 text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Reset
+                </button>
+            </div>
+            
+            <div class="flex items-center space-x-3 w-full md:w-auto justify-end">
+                <!-- Status Bar (During Quiz) -->
+                <div id="quiz-status-bar" class="hidden flex items-center space-x-4 sm:space-x-6 bg-white border border-slate-200 px-4 py-2 rounded-2xl shadow-sm text-xs">
+                    <div class="text-center">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Mode</p>
+                        <span id="badge-mode" class="font-bold text-indigo-600">Latihan</span>
+                    </div>
+                    <div class="h-7 w-px bg-slate-200"></div>
+                    <div class="text-center" id="timer-container">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Sisa Waktu</p>
+                        <span id="timer-display" class="font-extrabold text-rose-600 font-mono text-sm">--:--</span>
+                    </div>
+                    <div class="h-7 w-px bg-slate-200" id="timer-divider"></div>
+                    <div class="text-center">
+                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Kemajuan</p>
+                        <span id="progress-display" class="font-extrabold text-slate-700">0/30</span>
+                    </div>
+                </div>
+
+                <!-- Reset Button Desktop -->
+                <button onclick="promptResetQuiz()" class="hidden md:inline-flex items-center px-3.5 py-2 text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition shadow-sm">
+                    <i class="fa-solid fa-rotate-left mr-1.5"></i> Reset Progress
+                </button>
+            </div>
+        </header>
+
+        <main id="main-content" class="flex-grow flex flex-col justify-center">
+
+            <!-- 1. WELCOME / MODE SELECTION SCREEN -->
+            <section id="welcome-screen" class="max-w-3xl mx-auto w-full bg-white border border-slate-200/80 shadow-xl rounded-3xl p-6 sm:p-10 space-y-8">
+                <div class="text-center space-y-3">
+                    <span class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-700/10">
+                        <i class="fa-solid fa-graduation-cap mr-1.5"></i> Modul Evaluasi Kurikulum Merdeka
+                    </span>
+                    <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-900">Masteri SPLDV Interaktif</h2>
+                    <p class="text-slate-600 max-w-lg mx-auto text-xs sm:text-sm leading-relaxed">
+                        Uji pemahaman aljabar dan pemodelan masalah matematika Anda melalui 30 soal terpilih. Hasil dan riwayat Anda akan tersimpan secara otomatis.
+                    </p>
+                </div>
+
+                <!-- Previous Result Banner (If history exists) -->
+                <div id="previous-history-card" class="hidden p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-indigo-900 font-bold">Sesi Terakhir Terdeteksi</p>
+                            <p id="previous-history-info" class="text-xs text-indigo-700">Skor: 0/30 • Mode Latihan</p>
+                        </div>
+                    </div>
+                    <button onclick="resumeOrReviewLast()" id="btn-resume-quiz" class="px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-sm w-full sm:w-auto">
+                        Lanjutkan / Lihat Hasil
+                    </button>
+                </div>
+
+                <!-- Quiz Categories Preview -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="p-4 rounded-2xl bg-indigo-50/40 border border-indigo-100 text-center space-y-1">
+                        <div class="w-8 h-8 mx-auto rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-sm">
+                            <i class="fa-solid fa-square-root-variable"></i>
+                        </div>
+                        <h3 class="font-bold text-xs sm:text-sm text-slate-800">10 Soal Aljabar</h3>
+                        <p class="text-[11px] text-slate-500">Pers. linear murni, eliminasi, & substitusi.</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-sky-50/40 border border-sky-100 text-center space-y-1">
+                        <div class="w-8 h-8 mx-auto rounded-lg bg-sky-100 text-sky-600 flex items-center justify-center font-bold text-sm">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+                        <h3 class="font-bold text-xs sm:text-sm text-slate-800">10 Soal Cerita</h3>
+                        <p class="text-[11px] text-slate-500">Translasi kalimat & pemodelan kontekstual.</p>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-emerald-50/40 border border-emerald-100 text-center space-y-1">
+                        <div class="w-8 h-8 mx-auto rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-sm">
+                            <i class="fa-solid fa-chart-pie"></i>
+                        </div>
+                        <h3 class="font-bold text-xs sm:text-sm text-slate-800">10 Soal Kasus</h3>
+                        <p class="text-[11px] text-slate-500">Simulasi parkir, usia, pecahan, & usaha.</p>
+                    </div>
+                </div>
+
+                <!-- Select Quiz Mode -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 text-center">Pilih Mode Pembelajaran</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <!-- Mode Latihan -->
+                        <button id="btn-mode-latihan" onclick="selectMode('latihan')" class="group relative flex flex-col text-left p-5 rounded-2xl border-2 border-indigo-500 bg-indigo-50/20 transition-all duration-200 shadow-sm">
+                            <span class="text-base font-bold text-slate-900 flex items-center justify-between">
+                                <span><i class="fa-solid fa-book-bookmark text-indigo-600 mr-2"></i>Mode Latihan</span>
+                                <i class="fa-solid fa-circle-check text-indigo-600 text-lg mode-radio"></i>
+                            </span>
+                            <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                                Tanpa batasan waktu. Penjelasan lengkap, langkah penyelesaian, serta trik cepat langsung ditampilkan begitu Anda menjawab tiap nomor.
+                            </p>
+                        </button>
+
+                        <!-- Mode Ujian -->
+                        <button id="btn-mode-ujian" onclick="selectMode('ujian')" class="group relative flex flex-col text-left p-5 rounded-2xl border-2 border-slate-200 hover:border-rose-400 bg-white hover:bg-rose-50/10 transition-all duration-200 shadow-sm">
+                            <span class="text-base font-bold text-slate-900 flex items-center justify-between">
+                                <span><i class="fa-solid fa-stopwatch text-rose-600 mr-2"></i>Mode Ujian</span>
+                                <i class="fa-regular fa-circle text-slate-300 text-lg mode-radio"></i>
+                            </span>
+                            <p class="text-xs text-slate-500 mt-2 leading-relaxed">
+                                Dibatasi waktu 60 menit (30 soal). Fokus pengerjaan simulasi ujian murni, pembahasan lengkap dibuka sekaligus di halaman hasil.
+                            </p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Start Action -->
+                <div class="text-center pt-2">
+                    <button onclick="startQuiz()" id="btn-mulai" class="inline-flex items-center justify-center w-full sm:w-auto px-10 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold rounded-2xl shadow-lg shadow-indigo-200 transition transform active:scale-95 text-sm sm:text-base">
+                        <span>Mulai Sesi Sekarang</span>
+                        <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 2. ACTIVE QUIZ INTERFACE -->
+            <section id="quiz-screen" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    
+                    <!-- Main Question Box (8 cols) -->
+                    <div class="lg:col-span-8 bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+                        
+                        <!-- Question Header -->
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+                            <div class="flex items-center gap-2">
+                                <span id="question-number-badge" class="px-3 py-1 bg-indigo-100 text-indigo-800 font-bold text-xs rounded-xl">
+                                    Soal #1
+                                </span>
+                                <span id="question-category-badge" class="px-3 py-1 bg-slate-100 text-slate-600 font-semibold text-xs rounded-xl">
+                                    Aljabar
+                                </span>
+                            </div>
+                            <span class="text-xs text-slate-400 font-medium">30 Soal Total</span>
+                        </div>
+
+                        <!-- Question Text -->
+                        <div class="space-y-3">
+                            <div id="question-text" class="text-slate-800 font-medium text-sm sm:text-base leading-relaxed">
+                                Memuat soal...
+                            </div>
+                        </div>
+
+                        <!-- Options List -->
+                        <div id="options-container" class="space-y-3 pt-2">
+                            <!-- Options injected dynamically -->
+                        </div>
+
+                        <!-- Feedback & Explanation Box (Latihan Mode or after answering) -->
+                        <div id="explanation-box" class="hidden space-y-3 p-5 rounded-2xl border text-xs sm:text-sm">
+                            <div class="flex items-center gap-2 font-bold text-sm" id="explanation-title">
+                                <!-- Status icon & title -->
+                            </div>
+                            
+                            <div class="space-y-3 text-slate-700 leading-relaxed" id="explanation-content">
+                                <!-- Solution details injected here -->
+                            </div>
+                        </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="flex items-center justify-between border-t border-slate-100 pt-5">
+                            <button id="btn-prev" onclick="navigateQuestion(-1)" class="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed">
+                                <i class="fa-solid fa-chevron-left"></i> Sebelumnya
+                            </button>
+
+                            <button id="btn-next" onclick="navigateQuestion(1)" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-md shadow-indigo-100">
+                                Selanjutnya <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+
+                            <button id="btn-finish-quiz" onclick="finishQuiz()" class="hidden px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition shadow-md shadow-emerald-100">
+                                Selesaikan Kuis <i class="fa-solid fa-check mr-1"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Question Grid Navigation Panel (4 cols) -->
+                    <div class="lg:col-span-4 bg-white border border-slate-200 rounded-3xl p-5 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h3 class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-2">
+                                <i class="fa-solid fa-grip text-indigo-600"></i> Navigasi Soal
+                            </h3>
+                            <span id="answered-count-text" class="text-xs font-semibold text-slate-500">0 dari 30 Dijawab</span>
+                        </div>
+
+                        <!-- Question Numbers Grid -->
+                        <div id="question-grid" class="grid grid-cols-5 gap-2 max-h-[320px] overflow-y-auto custom-scrollbar p-1">
+                            <!-- Question buttons 1 to 30 rendered via JS -->
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2 text-[11px] text-slate-500 font-medium">
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-md bg-indigo-600 inline-block"></span> Aktif</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-md bg-emerald-100 border border-emerald-400 inline-block"></span> Terjawab</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-md bg-slate-100 border border-slate-200 inline-block"></span> Belum</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-md bg-rose-100 border border-rose-300 inline-block"></span> Salah (Latihan)</span>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- 3. RESULTS & REVIEW SCREEN -->
+            <section id="results-screen" class="hidden space-y-8">
+                <!-- Summary Card -->
+                <div class="bg-white border border-slate-200/80 rounded-3xl p-6 sm:p-10 shadow-xl space-y-8 max-w-4xl mx-auto">
+                    
+                    <div class="text-center space-y-3">
+                        <div id="result-icon-box" class="w-16 h-16 mx-auto rounded-3xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl shadow-inner">
+                            <i class="fa-solid fa-trophy"></i>
+                        </div>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">Sesi Evaluasi Selesai!</h2>
+                        <p class="text-xs sm:text-sm text-slate-500" id="result-date-text">Tanggal Pengerjaan: --</p>
+                    </div>
+
+                    <!-- Main Stats Score Grid -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        <div class="p-4 rounded-2xl bg-indigo-50/60 border border-indigo-100 text-center space-y-1">
+                            <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-wider">Nilai Akhir</p>
+                            <p id="score-final" class="text-2xl sm:text-4xl font-extrabold text-indigo-900">0</p>
+                            <p class="text-[10px] text-indigo-600">Skala 100</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-100 text-center space-y-1">
+                            <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-wider">Jawaban Benar</p>
+                            <p id="score-correct-count" class="text-2xl sm:text-4xl font-extrabold text-emerald-900">0</p>
+                            <p class="text-[10px] text-emerald-600">dari 30 soal</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-rose-50/60 border border-rose-100 text-center space-y-1">
+                            <p class="text-[11px] font-bold text-rose-700 uppercase tracking-wider">Jawaban Salah</p>
+                            <p id="score-wrong-count" class="text-2xl sm:text-4xl font-extrabold text-rose-900">0</p>
+                            <p class="text-[10px] text-rose-600">soal</p>
+                        </div>
+                        <div class="p-4 rounded-2xl bg-sky-50/60 border border-sky-100 text-center space-y-1">
+                            <p class="text-[11px] font-bold text-sky-700 uppercase tracking-wider">Akurasi</p>
+                            <p id="score-accuracy" class="text-2xl sm:text-4xl font-extrabold text-sky-900">0%</p>
+                            <p class="text-[10px] text-sky-600">persentase</p>
+                        </div>
+                    </div>
+
+                    <!-- Breakdown by Category -->
+                    <div class="space-y-3 bg-slate-50 p-5 rounded-2xl border border-slate-200">
+                        <h3 class="font-bold text-slate-800 text-xs sm:text-sm">Analisis Per Kategori</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <div class="p-3 bg-white rounded-xl border border-slate-200 flex justify-between items-center">
+                                <span>Aljabar (10)</span>
+                                <b id="cat-score-1" class="text-indigo-600">0/10</b>
+                            </div>
+                            <div class="p-3 bg-white rounded-xl border border-slate-200 flex justify-between items-center">
+                                <span>Soal Cerita (10)</span>
+                                <b id="cat-score-2" class="text-indigo-600">0/10</b>
+                            </div>
+                            <div class="p-3 bg-white rounded-xl border border-slate-200 flex justify-between items-center">
+                                <span>Aplikasi Kasus (10)</span>
+                                <b id="cat-score-3" class="text-indigo-600">0/10</b>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                        <button onclick="scrollToReview()" class="w-full sm:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl transition shadow-md">
+                            <i class="fa-solid fa-list-check mr-1.5"></i> Lihat Pembahasan Lengkap
+                        </button>
+                        <button onclick="promptResetQuiz()" class="w-full sm:w-auto px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl transition shadow-md">
+                            <i class="fa-solid fa-rotate-right mr-1.5"></i> Ulangi Kuis / Reset
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Solution Review Section -->
+                <div id="full-review-section" class="max-w-4xl mx-auto w-full bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-100 pb-4 gap-3">
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Pembahasan & Analisis 30 Soal</h3>
+                            <p class="text-xs text-slate-500">Tinjau jawaban Anda, solusi standar, dan perbandingan trik cepat</p>
+                        </div>
+                        
+                        <!-- Filter Review Tabs -->
+                        <div class="flex gap-1.5 bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+                            <button onclick="filterReview('all')" id="filter-all" class="px-3 py-1.5 rounded-lg bg-white shadow-sm text-slate-800">Semua</button>
+                            <button onclick="filterReview('wrong')" id="filter-wrong" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Salah</button>
+                            <button onclick="filterReview('correct')" id="filter-correct" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900">Benar</button>
+                        </div>
+                    </div>
+
+                    <div id="review-cards-container" class="space-y-6">
+                        <!-- Solution cards rendered via JS -->
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- CUSTOM RESET CONFIRMATION MODAL -->
+    <div id="reset-modal" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-md w-full p-6 space-y-5 transform transition-all">
+            <div class="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center text-xl font-bold">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-lg font-extrabold text-slate-900">Reset Seluruh Progress?</h3>
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    Tindakan ini akan menghapus semua riwayat pengerjaan, skor tersimpan, dan progress kuis Anda. Anda akan kembali ke awal.
+                </p>
+            </div>
+            <div class="flex items-center justify-end space-x-3 pt-2">
+                <button onclick="closeResetModal()" class="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                    Batal
+                </button>
+                <button onclick="executeResetQuiz()" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold transition shadow-md shadow-rose-200">
+                    Ya, Reset Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Audio Engine using Web Audio API
+        const playSound = (type) => {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                if (type === 'correct') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.35);
+                } else if (type === 'wrong') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(220, ctx.currentTime);
+                    osc.frequency.setValueAtTime(147, ctx.currentTime + 0.15);
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.4);
+                } else if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.04, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.08);
+                } else if (type === 'congrats') {
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, index) => {
+                        const oscNote = ctx.createOscillator();
+                        const gainNote = ctx.createGain();
+                        oscNote.connect(gainNote);
+                        gainNote.connect(ctx.destination);
+                        oscNote.type = 'sine';
+                        oscNote.frequency.value = freq;
+                        gainNote.gain.setValueAtTime(0.05, ctx.currentTime + index * 0.1);
+                        gainNote.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + index * 0.1 + 0.3);
+                        oscNote.start(ctx.currentTime + index * 0.1);
+                        oscNote.stop(ctx.currentTime + index * 0.1 + 0.3);
+                    });
+                }
+            } catch (e) {
+                // Audio context suppressed
+            }
+        };
+
+        // KaTeX Auto-Render Trigger
+        function initKaTeX() {
+            triggerMathRender(document.body);
+        }
+
+        function triggerMathRender(element) {
+            if (typeof renderMathInElement !== 'undefined') {
+                renderMathInElement(element || document.body, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+    </script>
+
+    <script>
+        // 30 Complete SPLDV Interactive Questions (All LaTeX escaped with double backslashes, Cramer method removed)
+        const questions = [
+            // CATEGORY 1: ALJABAR LANGSUNG (1-10)
+            {
+                id: 1,
+                category: "Aljabar",
+                question: "Diberikan sistem persamaan linear berikut:\n$$3x + y = 7$$\n$$x + 2y = 9$$\nTentukan nilai $x$ yang memenuhi SPLDV tersebut.",
+                options: ["$x = 2$", "$x = 1$", "$x = 3$", "$x = 4$"],
+                ans: 1,
+                stdSolution: "Metode Eliminasi (Menghilangkan $y$):\nKalikan pers (1) dengan 2 $\\implies 6x + 2y = 14$.\nKurangkan dengan pers (2):\n$$(6x + 2y) - (x + 2y) = 14 - 9 \\implies 5x = 5 \\implies x = 1$$.",
+                trickSolution: "Metode Substitusi Cepat:\nDari pers (1), dapatkan $y = 7 - 3x$.\nSubstitusikan ke pers (2):\n$$x + 2(7 - 3x) = 9 \\implies x + 14 - 6x = 9 \\implies -5x = -5 \\implies x = 1$$."
+            },
+            {
+                id: 2,
+                category: "Aljabar",
+                question: "Diketahui sistem persamaan dengan koefisien simetris:\n$$15x + 12y = 60$$\n$$12x + 15y = 48$$\nBerapakah nilai dari $(x + y)$?",
+                options: ["$2$", "$3$", "$4$", "$5$"],
+                ans: 2,
+                stdSolution: "Metode Eliminasi Biasa: Harus mengalikan dengan angka besar ($15 \\times 12 = 180$). Proses ini cukup memakan waktu jika dihitung manual.",
+                trickSolution: "Trik Koefisien Simetris: Cukup jumlahkan kedua persamaan secara langsung!\n$$(15x + 12y) + (12x + 15y) = 60 + 48 \\implies 27x + 27y = 108 \\implies 27(x + y) = 108 \\implies x + y = 4$$."
+            },
+            {
+                id: 3,
+                category: "Aljabar",
+                question: "Diberikan SPLDV berikut:\n$$2x + 3y = 12$$\n$$x - y = 1$$\nTentukan nilai $y$ dari sistem tersebut.",
+                options: ["$y = 1$", "$y = 2$", "$y = 3$", "$y = 4$"],
+                ans: 1,
+                stdSolution: "Metode Substitusi:\nDari pers (2), $x = y + 1$.\nSubstitusi ke pers (1):\n$$2(y + 1) + 3y = 12 \\implies 2y + 2 + 3y = 12 \\implies 5y = 10 \\implies y = 2$$.",
+                trickSolution: "Metode Eliminasi $x$ Langsung:\nKalikan pers (2) dengan 2 $\\implies 2x - 2y = 2$.\nKurangkan pers (1) - pers (2)':\n$$(2x + 3y) - (2x - 2y) = 12 - 2 \\implies 5y = 10 \\implies y = 2$$."
+            },
+            {
+                id: 4,
+                category: "Aljabar",
+                question: "Selesaikan sistem persamaan linear berikut:\n$$5x - 2y = 11$$\n$$3x + 2y = 13$$\nBerapakah nilai $x$?",
+                options: ["$x = 2$", "$x = 3$", "$x = 4$", "$x = 5$"],
+                ans: 1,
+                stdSolution: "Metode Eliminasi $y$:\nKarena koefisien $y$ memiliki tanda berlawanan ($-2$ dan $+2$), cukup jumlahkan kedua persamaan:\n$$(5x - 2y) + (3x + 2y) = 11 + 13 \\implies 8x = 24 \\implies x = 3$$.",
+                trickSolution: "Trik Penjumlahan Baris Langsung:\nSetiap kali menemukan tanda koefisien variabel sasaran berlawanan ($-2y$ dan $+2y$), langsung operasikan penjumlahan ($+$) untuk mengeliminasi variabel tersebut seketika."
+            },
+            {
+                id: 5,
+                category: "Aljabar",
+                question: "Tentukan himpunan penyelesaian $(x, y)$ dari sistem persamaan:\n$$4x + 3y = 18$$\n$$2x + 3y = 12$$",
+                options: ["$\\{(3, 2)\\}$", "$\\{(2, 3)\\}$", "$\\{(4, 1)\\}$", "$\\{(3, 3)\\}$"],
+                ans: 0,
+                stdSolution: "Metode Eliminasi $y$:\nKurangkan pers (1) - pers (2):\n$$2x = 6 \\implies x = 3$$.\nSubstitusi $x = 3$ ke pers (2):\n$$2(3) + 3y = 12 \\implies 6 + 3y = 12 \\implies 3y = 6 \\implies y = 2$$.\nJadi HP = $\\{(3, 2)\\}$.",
+                trickSolution: "Trik Koefisien Identik:\nTanda dan nilai koefisien $y$ sudah persis sama ($+3y$). Pengurangan antar baris memberikan $4x - 2x = 18 - 12 \\implies 2x = 6 \\implies x = 3$ secara instan."
+            },
+            {
+                id: 6,
+                category: "Aljabar",
+                question: "Jika $7x - 3y = 26$ dan $3x + y = 10$, berapakah nilai dari $(x - y)$?",
+                options: ["$3$", "$4$", "$5$", "$6$"],
+                ans: 1,
+                stdSolution: "Metode Campuran:\nDari pers (2): $y = 10 - 3x$.\nSubstitusi ke pers (1): $7x - 3(10 - 3x) = 26 \\implies 16x - 30 = 26 \\implies 16x = 56 \\implies x = 3,5$.\nNilai $y = 10 - 3(3,5) = -0,5$.\nMaka $x - y = 3,5 - (-0,5) = 4$.",
+                trickSolution: "Trik Pengurangan Baris Langsung:\nKurangkan pers (1) dengan pers (2) secara langsung:\n$$(7x - 3y) - (3x + y) = 26 - 10 \\implies 4x - 4y = 16 \\implies 4(x - y) = 16 \\implies x - y = 4$$\nTanpa perlu mencari nilai $x$ atau $y$ secara terpisah!"
+            },
+            {
+                id: 7,
+                category: "Aljabar",
+                question: "Tentukan himpunan penyelesaian dari SPLDV:\n$$2x + 5y = 20$$\n$$3x - 2y = 11$$",
+                options: ["$\\{(5, 2)\\}$", "$\\{(3, 2)\\}$", "$\\{(2, 5)\\}$", "$\\{(4, 3)\\}$"],
+                ans: 0,
+                stdSolution: "Metode Campuran (Eliminasi-Substitusi):\nSamakan koefisien $y$:\nPers (1) $\\times 2 \\implies 4x + 10y = 40$.\nPers (2) $\\times 5 \\implies 15x - 10y = 55$.\nJumlahkan $\\implies 19x = 95 \\implies x = 5$.\nMasukkan $x = 5$ ke pers (1): $2(5) + 5y = 20 \\implies 5y = 10 \\implies y = 2$.\nMaka HP = $\\{(5, 2)\\}$.",
+                trickSolution: "Metode Substitusi Langsung:\nDari pers (1), $x = \\frac{20 - 5y}{2}$.\nSubstitusikan ke pers (2):\n$$3\\left(\\frac{20 - 5y}{2}\\right) - 2y = 11 \\implies 60 - 15y - 4y = 22 \\implies -19y = -38 \\implies y = 2$$.\nMaka $x = \\frac{20 - 10}{2} = 5$."
+            },
+            {
+                id: 8,
+                category: "Aljabar",
+                question: "Manakah di antara sistem persamaan berikut yang TIDAK MEMILIKI PENYELESAIAN (Dua Garis Sejajar)?",
+                options: [
+                    "$$2x + y = 4 \\quad \\text{dan} \\quad 2x + y = 8$$",
+                    "$$x + y = 5 \\quad \\text{dan} \\quad x - y = 1$$",
+                    "$$2x + 2y = 6 \\quad \\text{dan} \\quad x + y = 3$$",
+                    "$$3x + y = 9 \\quad \\text{dan} \\quad x + 2y = 8$$"
+                ],
+                ans: 0,
+                stdSolution: "Dua garis sejajar tidak memiliki titik potong jika gradiennya sama ($a_1/a_2 = b_1/b_2$) namun konstanta berbeda ($c_1/c_2$).",
+                trickSolution: "Cek Rasio Koefisien:\nPada pilihan A: $\\frac{2}{2} = \\frac{1}{1} \\neq \\frac{4}{8} \\implies (1 = 1 \\neq 0,5)$.\nSisi kiri identik tetapi hasil kanannya berbeda, menandakan pertentangan (garis sejajar, $\\text{HP} = \\emptyset$)."
+            },
+            {
+                id: 9,
+                category: "Aljabar",
+                question: "Manakah sistem persamaan yang memiliki TAK HINGGA BANYAK PENYELESAIAN (Dua Garis Berhimpit)?",
+                options: [
+                    "$$x - y = 2 \\quad \\text{dan} \\quad 2x - 2y = 4$$",
+                    "$$x + y = 4 \\quad \\text{dan} \\quad x + y = 6$$",
+                    "$$2x + y = 5 \\quad \\text{dan} \\quad x + 2y = 5$$",
+                    "$$x + 3y = 7 \\quad \\text{dan} \\quad 2x + 3y = 10$$"
+                ],
+                ans: 0,
+                stdSolution: "Dua garis berhimpit merupakan persamaan yang persis sama atau kelipatan linear dari persamaan lainnya.",
+                trickSolution: "Cek Rasio Lengkap:\nPada pilihan A: $\\frac{1}{2} = \\frac{-1}{-2} = \\frac{2}{4} = 0,5$.\nKarena seluruh rasio sama ($a_1/a_2 = b_1/b_2 = c_1/c_2$), kedua persamaan sejatinya adalah garis yang sama."
+            },
+            {
+                id: 10,
+                category: "Aljabar",
+                question: "Jika $\\frac{x}{2} + \\frac{y}{3} = 5$ dan $\\frac{x}{4} - \\frac{y}{3} = -2$, berapakah nilai $x$?",
+                options: ["$x = 4$", "$x = 6$", "$x = 8$", "$x = 2$"],
+                ans: 0,
+                stdSolution: "Menghilangkan Pecahan:\nKalikan pers (1) dengan 6 $\\implies 3x + 2y = 30$.\nKalikan pers (2) dengan 12 $\\implies 3x - 4y = -24$.\nKurangkan: $6y = 54 \\implies y = 9$.\nSubstitusi $y = 9 \\implies 3x + 18 = 30 \\implies 3x = 12 \\implies x = 4$.",
+                trickSolution: "Eliminasi Pecahan Langsung:\nPerhatikan suku $+\\frac{y}{3}$ dan $-\\frac{y}{3}$ memiliki tanda berlawanan. Langsung jumlahkan kedua persamaan pecahan:\n$$\\left(\\frac{x}{2} + \\frac{x}{4}\\right) = 5 + (-2) \\implies \\frac{3x}{4} = 3 \\implies 3x = 12 \\implies x = 4$$."
+            },
+
+            // CATEGORY 2: SOAL CERITA / PEMODELAN (11-20)
+            {
+                id: 11,
+                category: "Soal Cerita",
+                question: "Budi membeli 3 buku tulis dan 2 pensil seharga Rp 16.500. Ani membeli 2 buku tulis dan 4 pensil seharga Rp 15.000. Berapakah harga 1 buku tulis?",
+                options: ["Rp 4.500", "Rp 3.500", "Rp 1.500", "Rp 5.000"],
+                ans: 0,
+                stdSolution: "Modelkan matematika: $3x + 2y = 16.500$ dan $2x + 4y = 15.000$.\nKalikan pers (1) dengan 2 $\\implies 6x + 4y = 33.000$.\nKurangkan dengan pers (2) $\\implies 4x = 18.000 \\implies x = 4.500$.",
+                trickSolution: "Penyederhanaan Model:\nBagi pers (2) dengan 2 lebih dulu $\\implies x + 2y = 7.500$.\nKurangkan langsung pers (1) dengan pers (2)':\n$$(3x + 2y) - (x + 2y) = 16.500 - 7.500 \\implies 2x = 9.000 \\implies x = 4.500$$."
+            },
+            {
+                id: 12,
+                category: "Soal Cerita",
+                question: "Jumlah dua buah bilangan adalah 45, sedangkan selisih kedua bilangan tersebut adalah 15. Berapakah bilangan terbesarnya?",
+                options: ["30", "25", "35", "20"],
+                ans: 0,
+                stdSolution: "Misalkan $x > y$.\n$$x + y = 45$$\n$$x - y = 15$$\nJumlahkan kedua persamaan: $2x = 60 \\implies x = 30$.",
+                trickSolution: "Trik Rumus Bilangan Terbesar:\nUntuk dua bilangan dengan Jumlah ($J$) dan Selisih ($S$):\n$$\\text{Bilangan Terbesar} = \\frac{J + S}{2} = \\frac{45 + 15}{2} = \\frac{60}{2} = 30$$."
+            },
+            {
+                id: 13,
+                category: "Soal Cerita",
+                question: "Berdasarkan soal nomor 12 (Jumlah = 45, Selisih = 15), berapakah bilangan terkecilnya?",
+                options: ["15", "20", "10", "25"],
+                ans: 0,
+                stdSolution: "Dari hasil $x = 30$, maka $y = 45 - 30 = 15$.",
+                trickSolution: "Trik Rumus Bilangan Terkecil:\nUntuk dua bilangan dengan Jumlah ($J$) dan Selisih ($S$):\n$$\\text{Bilangan Terkecil} = \\frac{J - S}{2} = \\frac{45 - 15}{2} = \\frac{30}{2} = 15$$."
+            },
+            {
+                id: 14,
+                category: "Soal Cerita",
+                question: "Harga 2 tiket bioskop Dewasa dan 3 tiket Anak-anak adalah Rp 210.000. Jika harga 2 tiket Dewasa dan 1 tiket Anak-anak adalah Rp 150.000, berapakah harga 1 tiket Anak-anak?",
+                options: ["Rp 30.000", "Rp 40.000", "Rp 25.000", "Rp 35.000"],
+                ans: 0,
+                stdSolution: "Model: $2D + 3A = 210.000$ dan $2D + 1A = 150.000$.\nKurangkan kedua persamaan: $2A = 60.000 \\implies A = 30.000$.",
+                trickSolution: "Trik Beda Suku Langsung:\nKomponen Dewasa ($2D$) sudah sama. Selisih tiket Anak adalah $3A - 1A = 2A$.\nSelisih total harga $= 210.000 - 150.000 = 60.000 \\implies A = 30.000$."
+            },
+            {
+                id: 15,
+                category: "Soal Cerita",
+                question: "Keliling sebuah persegi panjang adalah 40 cm. Jika panjangnya 4 cm lebihnya dari lebarnya, tentukan luas persegi panjang tersebut!",
+                options: ["96 cm²", "84 cm²", "100 cm²", "92 cm²"],
+                ans: 0,
+                stdSolution: "Keliling $2(p + l) = 40 \\implies p + l = 20$.\nSelisih $p - l = 4$.\nJumlahkan: $2p = 24 \\implies p = 12$, maka $l = 8$.\nLuas $= p \\times l = 12 \\times 8 = 96\\text{ cm}^2$.",
+                trickSolution: "Trik Jumlah-Selisih:\nJumlah $p + l = 20$, Selisih $p - l = 4$.\n$p = \\frac{20 + 4}{2} = 12\\text{ cm}$, $l = \\frac{20 - 4}{2} = 8\\text{ cm}$.\nLuas $= 12 \\times 8 = 96\\text{ cm}^2$."
+            },
+            {
+                id: 16,
+                category: "Soal Cerita",
+                question: "Empat tahun yang lalu, umur Ayah 5 kali umur Budi. Jika sekarang jumlah umur mereka adalah 50 tahun, berapakah umur Budi sekarang?",
+                options: ["11 tahun", "12 tahun", "10 tahun", "14 tahun"],
+                ans: 0,
+                stdSolution: "Model: $A + B = 50 \\implies A = 50 - B$.\n4 tahun lalu: $(A - 4) = 5(B - 4) \\implies (50 - B - 4) = 5B - 20 \\implies 46 - B = 5B - 20 \\implies 6B = 66 \\implies B = 11$.",
+                trickSolution: "Trik Rasio Mundur Waktu:\nJumlah umur 4 tahun lalu $= 50 - 2(4) = 42$ tahun.\nRasio umur Ayah : Budi (4 tahun lalu) $= 5 : 1$ (Total 6 bagian).\nUmur Budi 4 tahun lalu $= \\frac{1}{6} \\times 42 = 7$ tahun.\nUmur Budi sekarang $= 7 + 4 = 11$ tahun."
+            },
+            {
+                id: 17,
+                category: "Soal Cerita",
+                question: "Seorang pedagang menjual 5 cangkir kopi dan 3 gelas teh dengan pendapatan Rp 57.000. Esoknya ia menjual 5 cangkir kopi dan 5 gelas teh seharga Rp 65.000. Berapakah harga 1 gelas teh?",
+                options: ["Rp 4.000", "Rp 5.000", "Rp 3.500", "Rp 6.000"],
+                ans: 0,
+                stdSolution: "(1) $5K + 3T = 57.000$.\n(2) $5K + 5T = 65.000$.\nKurangkan pers (2) dengan pers (1) $\\implies 2T = 8.000 \\implies T = 4.000$.",
+                trickSolution: "Komponen Kopi ($5K$) sudah sama.\nPenambahan 2 gelas teh ($5T - 3T$) menambah pendapatan sebesar Rp $65.000 - 57.000 = 8.000$.\nMaka 1 gelas teh $= \\frac{8.000}{2} = \\text{Rp } 4.000$."
+            },
+            {
+                id: 18,
+                category: "Soal Cerita",
+                question: "Sebuah pecahan bernilai $\\frac{2}{3}$ jika pembilang dan penyebutnya ditambah 1. Jika pembilang dan penyebut dikurangi 1, nilainya menjadi $\\frac{1}{2}$. Tentukan pecahan asli tersebut!",
+                options: ["$\\frac{3}{5}$", "$\\frac{5}{7}$", "$\\frac{2}{5}$", "$\\frac{4}{7}$"],
+                ans: 0,
+                stdSolution: "Modelkan: $\\frac{x+1}{y+1} = \\frac{2}{3} \\implies 3x - 2y = -1$ dan $\\frac{x-1}{y-1} = \\frac{1}{2} \\implies 2x - y = 1$.\nSelesaikan SPLDV dengan eliminasi $y \\implies x = 3, y = 5$. Pecahan $= \\frac{3}{5}$.",
+                trickSolution: "Trik Uji Opsi Langsung:\nCek opsi A ($\\frac{3}{5}$):\n- Tambah 1: $\\frac{3+1}{5+1} = \\frac{4}{6} = \\frac{2}{3}$ (Sesuai!)\n- Kurang 1: $\\frac{3-1}{5-1} = \\frac{2}{4} = \\frac{1}{2}$ (Sesuai!)"
+            },
+            {
+                id: 19,
+                category: "Soal Cerita",
+                question: "Di toko perhiasan, harga 1 gram emas koin ($x$) dan 1 gram keping perak ($y$) adalah Rp 1.050.000. Jika harga 2 gram emas koin dan 3 gram keping perak adalah Rp 2.120.000, berapakah harga 1 gram perak?",
+                options: ["Rp 20.000", "Rp 30.000", "Rp 25.000", "Rp 15.000"],
+                ans: 0,
+                stdSolution: "$x + y = 1.050.000 \\implies 2x + 2y = 2.100.000$.\nBandingkan dengan $2x + 3y = 2.120.000$.\nKurangkan $\\implies y = 20.000$.",
+                trickSolution: "Perkalian Skalar Sederhana:\n2 gram emas + 2 gram perak $= 2 \\times 1.050.000 = 2.100.000$.\n2 gram emas + 3 gram perak $= 2.120.000$.\nSelisih 1 gram perak $= 2.120.000 - 2.100.000 = \\text{Rp } 20.000$."
+            },
+            {
+                id: 20,
+                category: "Soal Cerita",
+                question: "Siswa kelas 8 mengumpulkan uang kas. Jika setiap siswa membayar Rp 10.000, uang kurang Rp 30.000. Jika setiap siswa membayar Rp 12.000, uang kelebihan Rp 10.000. Berapakah jumlah siswa di kelas tersebut?",
+                options: ["20 siswa", "25 siswa", "18 siswa", "22 siswa"],
+                ans: 0,
+                stdSolution: "Misal jumlah siswa $= n$, target kas $= K$.\n$10.000n = K - 30.000$ dan $12.000n = K + 10.000$.\nKurangkan $\\implies 2.000n = 40.000 \\implies n = 20$.",
+                trickSolution: "Trik Selisih Iuran:\nSelisih tarif per siswa $= 12.000 - 10.000 = 2.000$.\nSelisih total kondisi (kurang vs lebih) $= 30.000 + 10.000 = 40.000$.\n$$\\text{Jumlah Siswa} = \\frac{40.000}{2.000} = 20\\text{ siswa}$$."
+            },
+
+            // CATEGORY 3: KASUS & PENERAPAN (21-30)
+            {
+                id: 21,
+                category: "Aplikasi Kasus",
+                question: "Di dalam tempat parkir terdapat 50 kendaraan yang terdiri dari mobil (4 roda) dan sepeda motor (2 roda). Jika jumlah seluruh roda kendaraan adalah 130 buah, berapakah banyaknya mobil?",
+                options: ["15 mobil", "20 mobil", "35 mobil", "25 mobil"],
+                ans: 0,
+                stdSolution: "$m + s = 50$ dan $4m + 2s = 130$.\nKalikan pers (1) dengan 2 $\\implies 2m + 2s = 100$.\nKurangkan $\\implies 2m = 30 \\implies m = 15$.",
+                trickSolution: "Trik Pengandaian Roda Minimum:\nAndaikan SELURUH 50 kendaraan adalah motor (2 roda), maka total roda $= 50 \\times 2 = 100$.\nKelebihan roda aktual $= 130 - 100 = 30$.\nBeda roda mobil dan motor $= 4 - 2 = 2$.\n$$\\text{Banyak Mobil} = \\frac{30}{2} = 15\\text{ buah}$$."
+            },
+            {
+                id: 22,
+                category: "Aplikasi Kasus",
+                question: "Berdasarkan soal tempat parkir nomor 21 (50 kendaraan, 130 roda, 15 mobil), berapakah banyaknya sepeda motor?",
+                options: ["35 motor", "30 motor", "25 motor", "40 motor"],
+                ans: 0,
+                stdSolution: "Banyak motor $= \\text{Total kendaraan} - \\text{Banyak mobil} = 50 - 15 = 35$.",
+                trickSolution: "Pengurangan Sisa:\nCukup kurangkan total kendaraan dengan jumlah mobil yang telah didapatkan: $50 - 15 = 35$ motor."
+            },
+            {
+                id: 23,
+                category: "Aplikasi Kasus",
+                question: "Tarif taksi A: Buka pintu Rp 10.000 + Rp 4.000/km. Tarif taksi B: Buka pintu Rp 16.000 + Rp 3.000/km. Pada jarak berapa km tarif kedua taksi tersebut tepat sama?",
+                options: ["6 km", "5 km", "8 km", "10 km"],
+                ans: 0,
+                stdSolution: "$y = 4.000x + 10.000$ dan $y = 3.000x + 16.000$.\nSamakan $y \\implies 4.000x + 10.000 = 3.000x + 16.000 \\implies 1.000x = 6.000 \\implies x = 6$.",
+                trickSolution: "Trik Jarak Impas (Break-even Point):\n$$\\text{Jarak Impas} = \\frac{\\text{Selisih Buka Pintu}}{\\text{Selisih Tarif per km}} = \\frac{16.000 - 10.000}{4.000 - 3.000} = \\frac{6.000}{1.000} = 6\\text{ km}$$."
+            },
+            {
+                id: 24,
+                category: "Aplikasi Kasus",
+                question: "Seorang peternak memiliki ayam (2 kaki) dan kambing (4 kaki). Total hewan 40 ekor dan total kaki 110 buah. Berapakah banyaknya kambing?",
+                options: ["15 ekor", "25 ekor", "20 ekor", "18 ekor"],
+                ans: 0,
+                stdSolution: "$a + k = 40$ dan $2a + 4k = 110$.\nKalikan pers (1) dengan 2 $\\implies 2a + 2k = 80$.\nKurangkan $\\implies 2k = 30 \\implies k = 15$.",
+                trickSolution: "Trik Hewan Berkaki Empat:\n$$\\text{Jumlah Kambing} = \\frac{\\text{Total Kaki} - 2(\\text{Total Hewan})}{2} = \\frac{110 - 2(40)}{2} = \\frac{30}{2} = 15\\text{ ekor}$$."
+            },
+            {
+                id: 25,
+                category: "Aplikasi Kasus",
+                question: "Sebuah kapal melaju searah arus sungai dengan kecepatan 24 km/jam. Saat melaju berlawanan arah arus, kecepatannya menjadi 16 km/jam. Berapakah kecepatan arus sungai tersebut?",
+                options: ["4 km/jam", "20 km/jam", "5 km/jam", "3 km/jam"],
+                ans: 0,
+                stdSolution: "$v_k + v_a = 24$ dan $v_k - v_a = 16$.\nKurangkan kedua persamaan $\\implies 2v_a = 8 \\implies v_a = 4\\text{ km/jam}$.",
+                trickSolution: "Trik Kecepatan Arus Sungai:\n$$\\text{Kecepatan Arus} = \\frac{v_{\\text{searah}} - v_{\\text{berlawanan}}}{2} = \\frac{24 - 16}{2} = \\frac{8}{2} = 4\\text{ km/jam}$$."
+            },
+            {
+                id: 26,
+                category: "Aplikasi Kasus",
+                question: "Berdasarkan soal nomor 25 (Searah = 24 km/jam, Berlawanan = 16 km/jam), berapakah kecepatan murni kapal di air tenang?",
+                options: ["20 km/jam", "18 km/jam", "22 km/jam", "21 km/jam"],
+                ans: 0,
+                stdSolution: "$v_k + v_a = 24 \\implies v_k + 4 = 24 \\implies v_k = 20\\text{ km/jam}$.",
+                trickSolution: "Trik Kecepatan Murni Kapal:\n$$\\text{Kecepatan Kapal} = \\frac{v_{\\text{searah}} + v_{\\text{berlawanan}}}{2} = \\frac{24 + 16}{2} = \\frac{40}{2} = 20\\text{ km/jam}$$."
+            },
+            {
+                id: 27,
+                category: "Aplikasi Kasus",
+                question: "Seorang kimiawan ingin membuat 100 ml larutan asam 30% dengan mencampurkan larutan asam 20% ($x$) dan larutan asam 50% ($y$). Berapa ml larutan 50% yang dibutuhkan?",
+                options: ["33,3 ml", "50 ml", "66,7 ml", "40 ml"],
+                ans: 0,
+                stdSolution: "(1) $x + y = 100$.\n(2) $0,20x + 0,50y = 0,30(100) = 30 \\implies 2x + 5y = 300$.\nKalikan pers (1) dengan 2 $\\implies 2x + 2y = 200$.\nKurangkan $\\implies 3y = 100 \\implies y = 33,3\\text{ ml}$.",
+                trickSolution: "Trik Proporsi Selisih Konsentrasi:\nSelisih target (30%) dari larutan rendah (20%) $= 10\\%$.\nSelisih larutan tinggi (50%) dari larutan rendah (20%) $= 30\\%$.\nProporsi larutan 50% $= \\frac{10\\%}{30\\%} = \\frac{1}{3}$.\n$$\\text{Volume} = \\frac{1}{3} \\times 100\\text{ ml} = 33,3\\text{ ml}$$."
+            },
+            {
+                id: 28,
+                category: "Aplikasi Kasus",
+                question: "Kios pulsa menawarkan Paket A (5GB Utama + 10GB Malam = Rp 35.000) dan Paket B (10GB Utama + 10GB Malam = Rp 50.000). Berapakah harga per GB Kuota Utama?",
+                options: ["Rp 3.000", "Rp 2.000", "Rp 4.000", "Rp 2.500"],
+                ans: 0,
+                stdSolution: "(1) $5U + 10M = 35.000$.\n(2) $10U + 10M = 50.000$.\nKurangkan (2) - (1) $\\implies 5U = 15.000 \\implies U = 3.000$.",
+                trickSolution: "Perhatikan Kuota Malam ($10M$) bernilai identik pada kedua paket.\nSelisih Kuota Utama $= 10\\text{GB} - 5\\text{GB} = 5\\text{GB}$.\nSelisih harga $= 50.000 - 35.000 = 15.000$.\nHarga per GB Utama $= \\frac{15.000}{5} = \\text{Rp } 3.000$."
+            },
+            {
+                id: 29,
+                category: "Aplikasi Kasus",
+                question: "Dua pekerja A dan B menyelesaikan suatu pekerjaan. Jika A bekerja 3 hari dan B bekerja 2 hari, total upah Rp 400.000. Jika A bekerja 2 hari dan B bekerja 3 hari, total upah Rp 375.000. Berapakah upah harian pekerja A?",
+                options: ["Rp 95.000", "Rp 85.000", "Rp 100.000", "Rp 90.000"],
+                ans: 0,
+                stdSolution: "(1) $3A + 2B = 400.000$.\n(2) $2A + 3B = 375.000$.\nJumlahkan: $5A + 5B = 775.000 \\implies A + B = 155.000$.\nKurangkan: $A - B = 25.000$.\nSelesaikan SPLDV baru $\\implies A = 95.000$.",
+                trickSolution: "Trik Jumlah & Selisih Simetris:\n$A + B = \\frac{400k + 375k}{5} = 155.000$.\n$A - B = 400k - 375k = 25.000$.\n$$\\text{Upah } A = \\frac{155.000 + 25.000}{2} = \\frac{180.000}{2} = \\text{Rp } 95.000$$."
+            },
+            {
+                id: 30,
+                category: "Aplikasi Kasus",
+                question: "Seorang pedagang membawa uang Rp 120.000. Jika ia membeli 3 kg apel ($x$) dan 2 kg jeruk ($y$), sisa uangnya Rp 10.000. Jika ia membeli 1 kg apel dan 2 kg jeruk, sisa uangnya Rp 58.000. Berapakah harga 1 kg apel?",
+                options: ["Rp 24.000", "Rp 18.000", "Rp 20.000", "Rp 22.000"],
+                ans: 0,
+                stdSolution: "(1) $3x + 2y = 120.000 - 10.000 = 110.000$.\n(2) $x + 2y = 120.000 - 58.000 = 62.000$.\nKurangkan pers (1) dengan pers (2) $\\implies 2x = 48.000 \\implies x = 24.000$.",
+                trickSolution: "Trik Selisih Belanja:\nKomponen jeruk ($2y$) persis sama.\nSelisih pembelanjaan apel $= 3\\text{ kg} - 1\\text{ kg} = 2\\text{ kg}$.\nSelisih biaya belanja $= 110.000 - 62.000 = 48.000$.\nHarga 1 kg apel $= \\frac{48.000}{2} = \\text{Rp } 24.000$."
+            }
+        ];
+
+        const STORAGE_KEY = 'spldv_quiz_master_state_v4';
+
+        let appState = {
+            mode: 'latihan',
+            status: 'welcome',
+            currentIndex: 0,
+            answers: new Array(30).fill(null),
+            timerRemaining: 3600,
+            history: null,
+            lastDate: null
+        };
+
+        let timerInterval = null;
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+            } catch(e) {
+                console.error("LocalStorage write error", e);
+            }
+        }
+
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    appState = { ...appState, ...parsed };
+                }
+            } catch(e) {
+                console.error("LocalStorage read error", e);
+            }
+        }
+
+        function selectMode(selectedMode) {
+            playSound('click');
+            appState.mode = selectedMode;
+            
+            const btnLatihan = document.getElementById('btn-mode-latihan');
+            const btnUjian = document.getElementById('btn-mode-ujian');
+
+            if (selectedMode === 'latihan') {
+                btnLatihan.className = "group relative flex flex-col text-left p-5 rounded-2xl border-2 border-indigo-500 bg-indigo-50/20 transition-all duration-200 shadow-sm";
+                btnLatihan.querySelector('.mode-radio').className = "fa-solid fa-circle-check text-indigo-600 text-lg mode-radio";
+                
+                btnUjian.className = "group relative flex flex-col text-left p-5 rounded-2xl border-2 border-slate-200 hover:border-rose-400 bg-white hover:bg-rose-50/10 transition-all duration-200 shadow-sm";
+                btnUjian.querySelector('.mode-radio').className = "fa-regular fa-circle text-slate-300 text-lg mode-radio";
+            } else {
+                btnUjian.className = "group relative flex flex-col text-left p-5 rounded-2xl border-2 border-rose-500 bg-rose-50/20 transition-all duration-200 shadow-sm";
+                btnUjian.querySelector('.mode-radio').className = "fa-solid fa-circle-check text-rose-600 text-lg mode-radio";
+                
+                btnLatihan.className = "group relative flex flex-col text-left p-5 rounded-2xl border-2 border-slate-200 hover:border-indigo-400 bg-white hover:bg-indigo-50/10 transition-all duration-200 shadow-sm";
+                btnLatihan.querySelector('.mode-radio').className = "fa-regular fa-circle text-slate-300 text-lg mode-radio";
+            }
+            saveState();
+        }
+
+        function startQuiz() {
+            playSound('click');
+            appState.status = 'active';
+            appState.currentIndex = appState.currentIndex || 0;
+            if (!appState.answers || appState.answers.length !== 30) {
+                appState.answers = new Array(30).fill(null);
+            }
+            
+            if (appState.mode === 'ujian' && !appState.timerRemaining) {
+                appState.timerRemaining = 3600;
+            }
+
+            saveState();
+            renderUI();
+            if (appState.mode === 'ujian') {
+                startTimer();
+            }
+        }
+
+        function resumeOrReviewLast() {
+            playSound('click');
+            if (appState.status === 'completed') {
+                renderResultsScreen();
+            } else {
+                startQuiz();
+            }
+        }
+
+        function renderQuestion() {
+            const idx = appState.currentIndex;
+            const q = questions[idx];
+            const savedAns = appState.answers[idx];
+
+            document.getElementById('question-number-badge').innerText = `Soal #${idx + 1}`;
+            document.getElementById('question-category-badge').innerText = q.category;
+            
+            const qTextDiv = document.getElementById('question-text');
+            qTextDiv.innerHTML = q.question.replace(/\n/g, '<br>');
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach((opt, oIdx) => {
+                const btn = document.createElement('button');
+                btn.onclick = () => selectAnswer(idx, oIdx);
+
+                let baseClasses = "w-full text-left p-4 rounded-2xl border transition flex items-center justify-between text-xs sm:text-sm font-medium ";
+                
+                if (savedAns !== null && savedAns !== undefined) {
+                    if (appState.mode === 'latihan') {
+                        if (oIdx === q.ans) {
+                            baseClasses += "bg-emerald-50 border-emerald-400 text-emerald-950 font-bold shadow-sm";
+                        } else if (oIdx === savedAns.selected) {
+                            baseClasses += "bg-rose-50 border-rose-400 text-rose-950 font-bold";
+                        } else {
+                            baseClasses += "bg-slate-50 border-slate-200 text-slate-400 opacity-60";
+                        }
+                    } else {
+                        if (oIdx === savedAns.selected) {
+                            baseClasses += "bg-indigo-50 border-indigo-500 text-indigo-900 font-bold ring-2 ring-indigo-200";
+                        } else {
+                            baseClasses += "bg-white border-slate-200 text-slate-700 hover:bg-slate-50";
+                        }
+                    }
+                } else {
+                    baseClasses += "bg-white border-slate-200 text-slate-700 hover:border-indigo-300 hover:bg-indigo-50/20";
+                }
+
+                btn.className = baseClasses;
+                btn.innerHTML = `
+                    <span>${opt}</span>
+                    <span class="w-6 h-6 rounded-full border border-slate-300 flex items-center justify-center text-xs font-bold font-mono">
+                        ${String.fromCharCode(65 + oIdx)}
+                    </span>
+                `;
+                optionsContainer.appendChild(btn);
+            });
+
+            const expBox = document.getElementById('explanation-box');
+            if (savedAns !== null && savedAns !== undefined && appState.mode === 'latihan') {
+                expBox.classList.remove('hidden');
+                const expTitle = document.getElementById('explanation-title');
+                const expContent = document.getElementById('explanation-content');
+
+                if (savedAns.isCorrect) {
+                    expBox.className = "space-y-3 p-5 rounded-2xl border text-xs sm:text-sm bg-emerald-50/80 border-emerald-200 text-emerald-950";
+                    expTitle.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600 text-lg"></i> Jawaban Anda Tepat Sekali!`;
+                } else {
+                    expBox.className = "space-y-3 p-5 rounded-2xl border text-xs sm:text-sm bg-rose-50/80 border-rose-200 text-rose-950";
+                    expTitle.innerHTML = `<i class="fa-solid fa-circle-xmark text-rose-600 text-lg"></i> Jawaban Kurang Tepat`;
+                }
+
+                expContent.innerHTML = `
+                    <div class="space-y-2">
+                        <p class="font-bold text-slate-800"><i class="fa-solid fa-list-check text-indigo-600 mr-1.5"></i> Pembahasan Standar (Langkah Sistematis):</p>
+                        <div class="p-3 bg-white/80 rounded-xl border border-slate-200 text-slate-700 text-xs leading-relaxed">${q.stdSolution.replace(/\n/g, '<br>')}</div>
+                    </div>
+                    <div class="space-y-2 pt-1">
+                        <p class="font-bold text-amber-900"><i class="fa-solid fa-bolt text-amber-500 mr-1.5"></i> Perbandingan Trik Cepat (Shortcut / Analisis):</p>
+                        <div class="p-3 bg-amber-500/10 rounded-xl border border-amber-300/80 text-amber-950 text-xs leading-relaxed">${q.trickSolution.replace(/\n/g, '<br>')}</div>
+                    </div>
+                `;
+            } else {
+                expBox.classList.add('hidden');
+            }
+
+            document.getElementById('btn-prev').disabled = (idx === 0);
+            
+            if (idx === questions.length - 1) {
+                document.getElementById('btn-next').classList.add('hidden');
+                document.getElementById('btn-finish-quiz').classList.remove('hidden');
+            } else {
+                document.getElementById('btn-next').classList.remove('hidden');
+                document.getElementById('btn-finish-quiz').classList.add('hidden');
+            }
+
+            renderQuestionGrid();
+            triggerMathRender();
+        }
+
+        function selectAnswer(qIdx, optionIdx) {
+            const q = questions[qIdx];
+            const isCorrect = (optionIdx === q.ans);
+
+            if (appState.answers[qIdx] === null || appState.mode === 'ujian') {
+                playSound(isCorrect ? 'correct' : 'wrong');
+            } else {
+                playSound('click');
+            }
+
+            appState.answers[qIdx] = {
+                selected: optionIdx,
+                isCorrect: isCorrect,
+                timestamp: Date.now()
+            };
+
+            saveState();
+            renderQuestion();
+        }
+
+        function navigateQuestion(direction) {
+            playSound('click');
+            const newIdx = appState.currentIndex + direction;
+            if (newIdx >= 0 && newIdx < questions.length) {
+                appState.currentIndex = newIdx;
+                saveState();
+                renderQuestion();
+            }
+        }
+
+        function jumpToQuestion(idx) {
+            playSound('click');
+            appState.currentIndex = idx;
+            saveState();
+            renderQuestion();
+        }
+
+        function renderQuestionGrid() {
+            const container = document.getElementById('question-grid');
+            container.innerHTML = '';
+
+            let answeredCount = 0;
+
+            questions.forEach((q, idx) => {
+                const btn = document.createElement('button');
+                btn.onclick = () => jumpToQuestion(idx);
+                
+                const ans = appState.answers[idx];
+                let btnClasses = "h-10 rounded-xl text-xs font-bold transition flex items-center justify-center border ";
+
+                if (idx === appState.currentIndex) {
+                    btnClasses += "bg-indigo-600 text-white border-indigo-700 shadow-md shadow-indigo-200 ring-2 ring-indigo-300 ";
+                } else if (ans !== null && ans !== undefined) {
+                    answeredCount++;
+                    if (appState.mode === 'latihan') {
+                        if (ans.isCorrect) {
+                            btnClasses += "bg-emerald-100 text-emerald-800 border-emerald-300 ";
+                        } else {
+                            btnClasses += "bg-rose-100 text-rose-800 border-rose-300 ";
+                        }
+                    } else {
+                        btnClasses += "bg-indigo-100 text-indigo-800 border-indigo-300 ";
+                    }
+                } else {
+                    btnClasses += "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 ";
+                }
+
+                btn.className = btnClasses;
+                btn.innerText = idx + 1;
+                container.appendChild(btn);
+            });
+
+            document.getElementById('answered-count-text').innerText = `${answeredCount} dari 30 Dijawab`;
+            document.getElementById('progress-display').innerText = `${answeredCount}/30`;
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            const display = document.getElementById('timer-display');
+
+            timerInterval = setInterval(() => {
+                if (appState.timerRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    finishQuiz();
+                } else {
+                    appState.timerRemaining--;
+                    const mins = Math.floor(appState.timerRemaining / 60);
+                    const secs = appState.timerRemaining % 60;
+                    display.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                    if (appState.timerRemaining % 10 === 0) saveState();
+                }
+            }, 1000);
+        }
+
+        function finishQuiz() {
+            clearInterval(timerInterval);
+            playSound('congrats');
+            appState.status = 'completed';
+            appState.lastDate = new Date().toLocaleDateString('id-ID', {
+                day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+            saveState();
+            renderUI();
+        }
+
+        function renderResultsScreen() {
+            let correctCount = 0;
+            let catScores = [0, 0, 0];
+
+            appState.answers.forEach((ans, idx) => {
+                if (ans && ans.isCorrect) {
+                    correctCount++;
+                    const catIdx = Math.floor(idx / 10);
+                    if (catIdx >= 0 && catIdx < 3) catScores[catIdx]++;
+                }
+            });
+
+            const scoreFinal = Math.round((correctCount / 30) * 100);
+            const wrongCount = 30 - correctCount;
+            const accuracy = Math.round((correctCount / 30) * 100);
+
+            document.getElementById('score-final').innerText = scoreFinal;
+            document.getElementById('score-correct-count').innerText = correctCount;
+            document.getElementById('score-wrong-count').innerText = wrongCount;
+            document.getElementById('score-accuracy').innerText = `${accuracy}%`;
+
+            document.getElementById('cat-score-1').innerText = `${catScores[0]}/10`;
+            document.getElementById('cat-score-2').innerText = `${catScores[1]}/10`;
+            document.getElementById('cat-score-3').innerText = `${catScores[2]}/10`;
+
+            document.getElementById('result-date-text').innerText = `Tanggal Pengerjaan: ${appState.lastDate || 'Hari ini'}`;
+
+            renderReviewCards('all');
+        }
+
+        let currentReviewFilter = 'all';
+
+        function filterReview(filter) {
+            playSound('click');
+            currentReviewFilter = filter;
+
+            ['all', 'wrong', 'correct'].forEach(f => {
+                const btn = document.getElementById(`filter-${f}`);
+                if (f === filter) {
+                    btn.className = "px-3 py-1.5 rounded-lg bg-white shadow-sm text-slate-900 font-bold";
+                } else {
+                    btn.className = "px-3 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 font-semibold";
+                }
+            });
+
+            renderReviewCards(filter);
+        }
+
+        function renderReviewCards(filter) {
+            const container = document.getElementById('review-cards-container');
+            container.innerHTML = '';
+
+            questions.forEach((q, idx) => {
+                const ans = appState.answers[idx];
+                const isCorrect = ans && ans.isCorrect;
+
+                if (filter === 'correct' && !isCorrect) return;
+                if (filter === 'wrong' && isCorrect) return;
+
+                const card = document.createElement('div');
+                card.className = "p-5 sm:p-6 rounded-2xl border bg-slate-50/50 space-y-4 text-xs sm:text-sm";
+
+                let statusBadge = isCorrect
+                    ? `<span class="px-3 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-xl"><i class="fa-solid fa-check mr-1"></i> Benar</span>`
+                    : `<span class="px-3 py-1 bg-rose-100 text-rose-800 font-bold text-xs rounded-xl"><i class="fa-solid fa-xmark mr-1"></i> Salah / Belum</span>`;
+
+                const userAnsText = ans !== null && ans !== undefined ? q.options[ans.selected] : '<i>Tidak dijawab</i>';
+                const correctAnsText = q.options[q.ans];
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                        <span class="font-bold text-slate-800 text-xs sm:text-sm">Soal #${idx + 1} (${q.category})</span>
+                        ${statusBadge}
+                    </div>
+
+                    <div class="text-slate-800 font-medium leading-relaxed">${q.question.replace(/\n/g, '<br>')}</div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                        <div class="p-3 bg-white rounded-xl border border-slate-200">
+                            <span class="text-slate-400 block mb-0.5 font-bold uppercase text-[10px]">Jawaban Anda:</span>
+                            <span class="font-semibold text-slate-800">${userAnsText}</span>
+                        </div>
+                        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
+                            <span class="text-emerald-700 block mb-0.5 font-bold uppercase text-[10px]">Jawaban Benar:</span>
+                            <span class="font-bold text-emerald-900">${correctAnsText}</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2 pt-2">
+                        <p class="font-bold text-slate-800"><i class="fa-solid fa-list-check text-indigo-600 mr-1.5"></i> Pembahasan Standar:</p>
+                        <div class="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 leading-relaxed">${q.stdSolution.replace(/\n/g, '<br>')}</div>
+                        
+                        <p class="font-bold text-amber-900 pt-1"><i class="fa-solid fa-bolt text-amber-500 mr-1.5"></i> Trik Cepat Shortcut:</p>
+                        <div class="p-3 bg-amber-500/10 rounded-xl border border-amber-300/80 text-amber-950 text-xs leading-relaxed">${q.trickSolution.replace(/\n/g, '<br>')}</div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+
+            triggerMathRender(container);
+        }
+
+        function scrollToReview() {
+            document.getElementById('full-review-section').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // RESET MODAL CONTROLS
+        function promptResetQuiz() {
+            playSound('click');
+            document.getElementById('reset-modal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            playSound('click');
+            document.getElementById('reset-modal').classList.add('hidden');
+        }
+
+        function executeResetQuiz() {
+            playSound('click');
+            clearInterval(timerInterval);
+            localStorage.removeItem(STORAGE_KEY);
+            
+            appState = {
+                mode: 'latihan',
+                status: 'welcome',
+                currentIndex: 0,
+                answers: new Array(30).fill(null),
+                timerRemaining: 3600,
+                history: null,
+                lastDate: null
+            };
+
+            closeResetModal();
+            renderUI();
+        }
+
+        function renderUI() {
+            loadState();
+
+            const welcomeScr = document.getElementById('welcome-screen');
+            const quizScr = document.getElementById('quiz-screen');
+            const resultsScr = document.getElementById('results-screen');
+            const statusBar = document.getElementById('quiz-status-bar');
+            const historyCard = document.getElementById('previous-history-card');
+
+            if (appState.status === 'welcome') {
+                welcomeScr.classList.remove('hidden');
+                quizScr.classList.add('hidden');
+                resultsScr.classList.add('hidden');
+                statusBar.classList.add('hidden');
+
+                const hasAnswers = appState.answers && appState.answers.some(a => a !== null);
+                if (hasAnswers) {
+                    historyCard.classList.remove('hidden');
+                    const answeredCount = appState.answers.filter(a => a !== null).length;
+                    document.getElementById('previous-history-info').innerText = `Terjawab: ${answeredCount}/30 Soal • Mode ${appState.mode.toUpperCase()}`;
+                } else {
+                    historyCard.classList.add('hidden');
+                }
+
+                selectMode(appState.mode || 'latihan');
+
+            } else if (appState.status === 'active') {
+                welcomeScr.classList.add('hidden');
+                quizScr.classList.remove('hidden');
+                resultsScr.classList.add('hidden');
+                statusBar.classList.remove('hidden');
+
+                document.getElementById('badge-mode').innerText = appState.mode === 'ujian' ? 'Ujian' : 'Latihan';
+                if (appState.mode === 'latihan') {
+                    document.getElementById('timer-container').classList.add('hidden');
+                    document.getElementById('timer-divider').classList.add('hidden');
+                } else {
+                    document.getElementById('timer-container').classList.remove('hidden');
+                    document.getElementById('timer-divider').classList.remove('hidden');
+                }
+
+                renderQuestion();
+
+            } else if (appState.status === 'completed') {
+                welcomeScr.classList.add('hidden');
+                quizScr.classList.add('hidden');
+                resultsScr.classList.remove('hidden');
+                statusBar.classList.add('hidden');
+
+                renderResultsScreen();
+            }
+            triggerMathRender();
+        }
+
+        window.onload = function() {
+            renderUI();
+        };
+    </script>
+</body>
+</html>
